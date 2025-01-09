@@ -3,43 +3,64 @@ from tkinter import Canvas, PhotoImage
 from PIL import Image, ImageTk
 import time
 import os
+import sys
 
+def resource_path(relative_path):
+    """Получает правильный путь к ресурсам как для исходного кода, так и для exe."""
+    try:
+        # Для PyInstaller
+        if getattr(sys, 'frozen', False):
+            # Получаем путь к временной директории PyInstaller
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.dirname(__file__)  # Для исходного кода
+        return os.path.join(base_path, relative_path)
+    except Exception as e:
+        print(f"Ошибка при получении пути: {e}")
+        return relative_path  # Возвращаем относительный путь, если ошибка
 
 class FlipClockWithImages:
     def __init__(self, root):
         self.root = root
-        self.show_seconds = tk.BooleanVar(value=False)  # Используем BooleanVar для привязки к чекбоксу
+        self.show_seconds = tk.BooleanVar(value=True)  # Используем BooleanVar для привязки к чекбоксу
         self.root.overrideredirect(True)  # Убираем рамку окна
 
         self.update_window_geometry()  # Обновляем размеры окна
 
         # Устанавливаем прозрачность окна
-        self.root.attributes("-topmost", True)  # Чтобы окно всегда было поверх других
-        self.root.attributes("-alpha", 0.3)  # Прозрачность (при необходимости)
-        self.root.attributes("-transparentcolor", "black")  # Убираем фон
+        self.root.attributes("-topmost", False)  # Чтобы окно всегда было поверх других
+        self.root.attributes("-alpha", 1.0)  # Прозрачность (при необходимости)
 
         # Основной фрейм для организации элементов
         self.main_frame = tk.Frame(self.root, bg="black")
-        self.main_frame.pack(fill="both", expand=True)
+        self.main_frame.place(relwidth=1, relheight=1)  # Используем place для точного позиционирования
 
-        # Создаем холст для отображения
-        self.canvas = Canvas(self.main_frame, width=600, height=200, bg="black", bd=0, highlightthickness=0)
-        self.canvas.pack(fill="both", expand=True)
+        # Изначальные размеры канвы
+        # canvas_width = 622
+        canvas_width = 770
+        canvas_height = 210
+        delta_x = 67 # отступ от левого края канвы
+        delta_y = 10  # отступ от левого края канвы
+        # Создаем холст для отображения с более компактными размерами
+        self.canvas = Canvas(self.main_frame, width=canvas_width, height=canvas_height, bg="black", bd=0,
+                             highlightthickness=0)
+        self.canvas.place(x=0, y=0)  # Позиционируем холст с точными размерами
 
         # Добавляем чекбокс под холстом
         self.checkbox_frame = tk.Frame(self.main_frame, bg="black")  # Фрейм для чекбокса
-        self.checkbox_frame.pack(fill="x")
+        # self.checkbox_frame.pack(fill="x")
+        self.checkbox_frame.place(x=585, y=182)  # Позиционируем ниже холста
 
         self.seconds_checkbox = tk.Checkbutton(
             self.checkbox_frame,
-            text="секунды",
+            text="",
             variable=self.show_seconds,
             command=self.on_seconds_toggle,
             bg="black",
             fg="white",
             selectcolor="gray"
         )
-        self.seconds_checkbox.pack(side="left", padx=75, pady=5)
+        self.seconds_checkbox.pack(side="left", padx=0, pady=0)
 
         # Загружаем картинки для цифр от 0 до 9
         self.digits = []
@@ -55,15 +76,15 @@ class FlipClockWithImages:
         self.digits_seconds = [digit.subsample(3, 3) for digit in self.digits]  # Уменьшаем на 3x для секунд
 
         # Создаем объекты для отображения часов, минут и секунд
-        self.time_display_hour_tens = self.canvas.create_image(150, 100, image=self.digits[0])  # Часы: десятки
-        self.time_display_hour_ones = self.canvas.create_image(300, 100, image=self.digits[0])  # Часы: единицы
+        self.time_display_hour_tens = self.canvas.create_image(150-delta_x, 98+delta_y, image=self.digits[0])  # Часы: десятки
+        self.time_display_hour_ones = self.canvas.create_image(300-delta_x, 98+delta_y, image=self.digits[0])  # Часы: единицы
 
-        self.time_display_minute_tens = self.canvas.create_image(460, 100, image=self.digits[0])  # Минуты: десятки
-        self.time_display_minute_ones = self.canvas.create_image(610, 100, image=self.digits[0])  # Минуты: единицы
+        self.time_display_minute_tens = self.canvas.create_image(460-delta_x, 98+delta_y, image=self.digits[0])  # Минуты: десятки
+        self.time_display_minute_ones = self.canvas.create_image(610-delta_x, 98+delta_y, image=self.digits[0])  # Минуты: единицы
 
         if self.show_seconds:
-            self.time_display_second_tens = self.canvas.create_image(720, 165, image=self.digits_seconds[0])
-            self.time_display_second_ones = self.canvas.create_image(773, 165, image=self.digits_seconds[0])
+            self.time_display_second_tens = self.canvas.create_image(650, 143, image=self.digits_seconds[0])
+            self.time_display_second_ones = self.canvas.create_image(701, 143, image=self.digits_seconds[0])
         else:
             self.time_display_second_tens = None
             self.time_display_second_ones = None
@@ -86,10 +107,10 @@ class FlipClockWithImages:
 
     def on_drag(self, event):
         """Перемещаем окно в соответствии с движением мыши"""
-        delta_x = event.x - self.offset_x
-        delta_y = event.y - self.offset_y
-        new_x = self.root.winfo_x() + delta_x
-        new_y = self.root.winfo_y() + delta_y
+        delta_xx = event.x - self.offset_x
+        delta_xy = event.y - self.offset_y
+        new_x = self.root.winfo_x() + delta_xx
+        new_y = self.root.winfo_y() + delta_xy
         self.root.geometry(f"+{new_x}+{new_y}")
 
     def on_seconds_toggle(self):
@@ -100,9 +121,9 @@ class FlipClockWithImages:
     def update_window_geometry(self):
         """Обновляет геометрию окна в зависимости от состояния секунд"""
         if self.show_seconds.get():
-            self.root.geometry("920x230")  # Добавляем место для чекбокса
+            self.root.geometry("735x220")
         else:
-            self.root.geometry("687x230")  # Добавляем место для чекбокса
+            self.root.geometry("629x220")
 
     def flip(self, current_time, new_time):
         """Анимация смены времени с использованием эффекта переворота"""
