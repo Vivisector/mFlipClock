@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import PhotoImage
+from tkinter import Tk, Canvas, PhotoImage
+from PIL import Image, ImageTk
 import time
 import os
 
@@ -7,12 +8,19 @@ import os
 class FlipClockWithImages:
     def __init__(self, root):
         self.root = root
-        self.show_seconds = True  # Для отображения секунд по умолчанию
+        self.show_seconds = False  # Для отображения секунд по умолчанию
         self.root.overrideredirect(True)  # Убираем рамку окна
-        self.root.geometry("820x230+100+100")  # Устанавливаем размер и позицию окна
+        if self.show_seconds:
+            self.root.geometry("920x200+100+100")  # Устанавливаем размер и позицию окна
+        else:
+            self.root.geometry("700x200+100+100")  # Устанавливаем размер и позицию окна
 
         # Устанавливаем прозрачность окна
-        self.root.attributes("-alpha", 0.7)  # 0.0 - полностью прозрачное, 1.0 - непрозрачное
+        # self.root.attributes("-alpha", 0.7)  # 0.0 - полностью прозрачное, 1.0 - непрозрачное
+        self.root.overrideredirect(True)
+        self.root.attributes("-topmost", True)  # Чтобы окно всегда было поверх других
+        self.root.attributes("-alpha", 0.7)  # Прозрачность (при необходимости)
+        self.root.attributes("-transparentcolor", "black")  # Убираем фон
 
         # Загружаем картинки для цифр от 0 до 9
         self.digits = []
@@ -29,7 +37,10 @@ class FlipClockWithImages:
 
         # Создаем холст для отображения
         # self.canvas = tk.Canvas(self.root, width=600, height=200, bg='black')
-        self.canvas = tk.Canvas(self.root, width=1200, height=200, bg='black')
+        # self.canvas = tk.Canvas(self.root, width=820, height=200, bg='black')
+        self.canvas = Canvas(self.root, width=600, height=200, bg="black", bd=0, highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
+
         self.canvas.pack()
 
         # Создаем объекты для отображения часов, минут и секунд
