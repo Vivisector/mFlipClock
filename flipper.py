@@ -30,10 +30,13 @@ class FlipClockWithImages:
         # Устанавливаем прозрачность окна
         self.root.attributes("-topmost", False)  # Чтобы окно всегда было поверх других
         self.root.attributes("-alpha", 1.0)  # Прозрачность (при необходимости)
+        self.root.attributes("-transparentcolor", "black")
 
         # Основной фрейм для организации элементов
         self.main_frame = tk.Frame(self.root, bg="black")
         self.main_frame.place(relwidth=1, relheight=1)  # Используем place для точного позиционирования
+        # self.main_frame.place(width=200, height=100)  # Фиксированные размеры
+        # self.main_frame.place(relwidth=0.9, relheight=0.5)  # Половина размеров родительского контейнера
 
         # Изначальные размеры канвы
         # canvas_width = 622
@@ -49,7 +52,7 @@ class FlipClockWithImages:
         # Добавляем чекбокс под холстом
         self.checkbox_frame = tk.Frame(self.main_frame, bg="black")  # Фрейм для чекбокса
         # self.checkbox_frame.pack(fill="x")
-        self.checkbox_frame.place(x=585, y=182)  # Позиционируем ниже холста
+        self.checkbox_frame.place(x=585, y=182)  # Позиционируем чекбокс
 
         self.seconds_checkbox = tk.Checkbutton(
             self.checkbox_frame,
@@ -65,7 +68,8 @@ class FlipClockWithImages:
         # Загружаем картинки для цифр от 0 до 9
         self.digits = []
         for i in range(10):  # 10 картинок для цифр от 0 до 9
-            filename = f"images/{i}.png"
+            # filename = f"images/{i}.png"
+            filename = resource_path(f"images/{i}.png")
             if os.path.exists(filename):
                 self.digits.append(PhotoImage(file=filename))
             else:
